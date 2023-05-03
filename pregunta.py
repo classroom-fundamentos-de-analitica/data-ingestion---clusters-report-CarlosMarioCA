@@ -10,12 +10,23 @@ espacio entre palabra y palabra.
 
 """
 import pandas as pd
+import csv
+import re
+
+def read_csv():
+    matcher = re.compile(r"([0-9]+)\s+([0-9]+)\s+([0-9]+,[0-9]+ %)\s+([\w\s,\-\(\)]+\n+)")
+    with open("clusters_report.txt", "r") as raw:
+        table = raw.read()
+        data = matcher.findall(table)
+    for row in data:
+        print(row)
+    return data
 
 
 def ingest_data():
 
-    #
-    # Inserte su código aquí
-    #
+    df = read_csv()
 
     return df
+
+print(ingest_data())
