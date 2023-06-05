@@ -10,23 +10,49 @@ espacio entre palabra y palabra.
 
 """
 import pandas as pd
-import csv
 import re
 
-def read_csv():
-    matcher = re.compile(r"([0-9]+)\s+([0-9]+)\s+([0-9]+,[0-9]+ %)\s+([\w\s,\-\(\)]+\n+)")
-    with open("clusters_report.txt", "r") as raw:
-        table = raw.read()
-        data = matcher.findall(table)
-    for row in data:
-        print(row)
-    return data
+def processing(var):
+    line = []
+    line.append(int(var[3:8]))
+    line.append(int(var[9:15]))
+    line.append(float(var[25:29].replace(',', '.')))
+    fetch = var[41:]
+    fetch = fetch.replace('\n', '')
+    fetch = fetch.replace('.', '')
+    fetch = re.sub(r' +', ' ', fetch)
+    line.append(fetch)
+    return line
 
 
 def ingest_data():
 
-    df = read_csv()
+    with open ("clusters_report.txt", "r") as raw:
+        data = raw.readlines()
 
-    return df
+    # Tittle format
+    tittle = data[:2]
+    tittle = list(map(lambda x : x.replace("\n", ""), tittle))
+    tittle = list(map(lambda x : x.strip(), tittle))
+    tittle = list((map(lambda x : re.split(r' {2,}',x), tittle)))
+    header = tittle[0]
+    aux = tittle[1]
+    header[1] = header[1] + " " + aux[0]
+    header[2] = header[2] + " " + aux[1]
+
+    header = list(map(lambda x : x.lower(), header))
+    header = list(map(lambda x : x.replace(' ', '_'),header))
+
+    # Row format
+    data = data[4:]
+
+    test = ""
+    test = test.join(data)
+    test = re.split(r'\n *\n', test)
+    test = list(filter(lambda x : x != '', test))
+    test = list(map(processing, test))
+    df = pd.DataFrame(test, columns=header)
+
+    return(df)
 
 print(ingest_data())
